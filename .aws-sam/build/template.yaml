@@ -1,0 +1,29 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 'dynamo_reader
+
+  Sample SAM Template for dynamo_reader
+
+  '
+Globals:
+  Function:
+    Timeout: 5
+Resources:
+  DynamoReader:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: DynamoReader
+      Handler: dynamo_reader
+      Runtime: go1.x
+      Tracing: Active
+      Policies:
+      - AmazonDynamoDBFullAccess
+      Events:
+        CatchAll:
+          Type: Api
+          Properties:
+            Path: /dynamo_reader
+            Method: GET
+      Environment:
+        Variables:
+          PARAM1: VALUE
