@@ -27,3 +27,21 @@ Resources:
       Environment:
         Variables:
           PARAM1: VALUE
+  CustomerRegistration:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: CustomerRegistration
+      Handler: customer_registration
+      Runtime: go1.x
+      Tracing: Active
+      Policies:
+      - AmazonDynamoDBFullAccess
+      Events:
+        CatchAll:
+          Type: Api
+          Properties:
+            Path: /signup
+            Method: POST
+      Environment:
+        Variables:
+          PARAM1: VALUE
