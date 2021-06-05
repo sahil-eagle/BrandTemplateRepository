@@ -3,6 +3,7 @@ package main
 // snippet-start:[dynamodb.go.create_item.imports]
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -13,27 +14,31 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
 
-type SignUpObject struct {
-	pk             string
-	sk             string
-	CustomerEmail  string
-	CustomerMobile string
-	CustomerName   string
-	Password       string
-	IsVerified     bool
-}
-type ItemResponse struct {
-	pk             string
-	sk             string
-	CustomerEmail  string
-	CustomerMobile string
-	CustomerName   string
-	Password       string
-	IsVerified     bool
-}
+// type SignUpObject struct {
+// 	pk             string
+// 	sk             string
+// 	CustomerEmail  string
+// 	CustomerMobile string
+// 	CustomerName   string
+// 	Password       string
+// 	IsVerified     bool
+// 	method         string
+// }
+// type ItemResponse struct {
+// 	pk             string
+// 	sk             string
+// 	CustomerEmail  string
+// 	CustomerMobile string
+// 	CustomerName   string
+// 	Password       string
+// 	IsVerified     bool
+// 	method         string
+// }
 
 func postHandler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 
+	fmt.Println("postHandler lambda started")
+	fmt.Println(request.Body)
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
 	}))
@@ -41,42 +46,34 @@ func postHandler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyR
 	// Starting a DynamoDB Session
 	svc := dynamodb.New(sess)
 
+	var userMap map[string]interface{}
+	json.Unmarshal([]byte(request.Body), &userMap)
+	// userMethod := userMap["method"].(string) //Using type assertion to concat "User#" prefix
+	// fmt.Println(userMethod)
+	// fmt.Println(userMap)
+
 	// Checking if method is signup
-	if request.Body.methods == "signup" {
-		var item SignUpObject
-		err := json.Unmarshal([]byte(request.Body), &item) // converting the request body to json type(byte data) and then into struct object, assigning to item
-		if err != nil {
-			return events.APIGatewayProxyResponse{Body: err.Error(), StatusCode: 404}, nil
-		}
+	if userMap["method"] == "signup" {
 
 		UserPrefix := "User#"
-		newUser := ItemResponse{
-			pk:             UserPrefix + item.CustomerEmail,
-			sk:             item.sk,
-			CustomerEmail:  item.CustomerEmail,
-			CustomerMobile: item.CustomerMobile,
-			CustomerName:   item.CustomerName,
-			Password:       item.Password,
-			IsVerified:     item.IsVerified,
-		}
 
-		_, err = json.Marshal(&newUser) // Convert struct data into JSON
-		if err != nil {
-			return events.APIGatewayProxyResponse{Body: err.Error(), StatusCode: 404}, nil //Error if not found
-		}
+		fmt.Println("Inside Signup Method")
+
 		tableName := "BrandTemplateTable"
 
-		data, err2 := dynamodbattribute.MarshalMap(newUser)
+		userMap["pk"] = UserPrefix + userMap["pk"].(string) //Using type assertion to concat "User#" prefix
+		data, err2 := dynamodbattribute.MarshalMap(userMap)
 		if err2 != nil {
 			log.Fatalf("Got error marshalling new item: %s", err2)
 		}
 
+		fmt.Println(data)
 		// DynamoDB getItem method for checking user existance
 		result, err := svc.GetItem(&dynamodb.GetItemInput{
 			TableName: aws.String(tableName),
 			Key: map[string]*dynamodb.AttributeValue{
 				"pk": {
-					S: aws.String(newUser.pk),
+					S: aws.String(userMap["CustomerEmail"].(string)),
 				},
 			},
 		})
@@ -96,9 +93,10 @@ func postHandler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyR
 		}
 
 		// Returning the response object that has been written to the Database
+		return events.APIGatewayProxyResponse{Body: string("User created"), StatusCode: 200}, nil
+	} else {
+		return events.APIGatewayProxyResponse{Body: string("Different method detected, cannot create User"), StatusCode: 400}, nil
 	}
-	return events.APIGatewayProxyResponse{Body: string("Data written"), StatusCode: 200}, nil
-
 }
 
 func main() {
