@@ -15,4 +15,11 @@ source_md5 = ""
 packagetype = "Zip"
 functions = ["CustomerRegistration"]
 
+[function_build_definitions.facb79da-e318-4840-81a3-62a1209fbb71]
+codeuri = "/home/sahil/EaglePower/github/customer_360/query-gsi"
+runtime = "go1.x"
+source_md5 = ""
+packagetype = "Zip"
+functions = ["queryGsiFunction"]
+
 [layer_build_definitions]

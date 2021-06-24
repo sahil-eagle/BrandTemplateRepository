@@ -45,3 +45,21 @@ Resources:
       Environment:
         Variables:
           PARAM1: VALUE
+  queryGsiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: queryGsiFunction
+      Handler: query-gsi
+      Runtime: go1.x
+      Tracing: Active
+      Policies:
+      - AmazonDynamoDBFullAccess
+      Events:
+        CatchAll:
+          Type: Api
+          Properties:
+            Path: /query-gsi
+            Method: GET
+      Environment:
+        Variables:
+          PARAM1: VALUE
