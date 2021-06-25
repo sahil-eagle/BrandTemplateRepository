@@ -28,12 +28,16 @@ func userDetailsQueryHandler(request events.APIGatewayProxyRequest) (events.APIG
 	// Starting a DynamoDB Session
 	svc := dynamodb.New(sess)
 
+	headers := make(map[string]string)
 	var userMap map[string]interface{}
 	// var queryCustomerDetailsMap map[string]interface{}
 	var userDetails []map[string]interface{}
 	// var userArray map[string]interface{}
-
 	json.Unmarshal([]byte(request.Body), &userMap)
+
+	headers["Access-Control-Allow-Headers"] = "Content-Type"
+	headers["Access-Control-Allow-Origin"] = "*"
+	headers["Access-Control-Allow-Methods"] = "OPTIONS,POST,GET"
 	// userMethod := userMap["method"].(string) //Using type assertion to concat "User#" prefix
 	// fmt.Println(userMethod)
 	// fmt.Println(userMap)
@@ -83,15 +87,15 @@ func userDetailsQueryHandler(request events.APIGatewayProxyRequest) (events.APIG
 	// }
 
 	if errJson != nil {
-		return events.APIGatewayProxyResponse{Body: "Cannot convert to json string", StatusCode: 400}, nil
+		return events.APIGatewayProxyResponse{Body: "Cannot convert to json string", Headers: headers, StatusCode: 400}, nil
 	}
 
 	// Checking if User with given email exist
 	if err != nil {
-		return events.APIGatewayProxyResponse{Body: "User not found", StatusCode: 404}, nil
+		return events.APIGatewayProxyResponse{Body: "User not found", Headers: headers, StatusCode: 404}, nil
 	}
 	// Returning the response object that has been written to the Database
-	return events.APIGatewayProxyResponse{Body: string(data), StatusCode: 200}, nil
+	return events.APIGatewayProxyResponse{Body: string(data), Headers: headers, StatusCode: 200}, nil
 
 }
 
