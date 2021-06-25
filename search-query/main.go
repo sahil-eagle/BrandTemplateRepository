@@ -56,9 +56,9 @@ func searchQueryHandler(request events.APIGatewayProxyRequest) (events.APIGatewa
 			},
 		})
 
-		fmt.Println(result.Items)
-		dynamodbattribute.UnmarshalMap(result.Items[0], &queryOutputCustomerDetailsMap)
-
+		for idx, _ := range result.Items {
+			dynamodbattribute.UnmarshalMap(result.Items[idx], &queryOutputCustomerDetailsMap)
+		}
 		resp, errJson := json.Marshal(queryOutputCustomerDetailsMap)
 
 		filters := searchQueryMap["filters"]
@@ -104,7 +104,9 @@ func searchQueryHandler(request events.APIGatewayProxyRequest) (events.APIGatewa
 			return events.APIGatewayProxyResponse{Body: "MPAN id not found", StatusCode: 404}, nil
 		}
 
-		dynamodbattribute.UnmarshalMap(result.Items[0], &queryCustomerDetailsMpanMap)
+		for idx, _ := range result.Items {
+			dynamodbattribute.UnmarshalMap(result.Items[idx], &queryCustomerDetailsMpanMap)
+		}
 		resp, errJson := json.Marshal(queryCustomerDetailsMpanMap)
 		if errJson != nil {
 			return events.APIGatewayProxyResponse{Body: "Cannot convert to json string", StatusCode: 400}, nil
@@ -129,7 +131,9 @@ func searchQueryHandler(request events.APIGatewayProxyRequest) (events.APIGatewa
 			},
 		})
 
-		dynamodbattribute.UnmarshalMap(result.Items[0], &queryOutputCustomerDetailsMap)
+		for idx, _ := range result.Items {
+			dynamodbattribute.UnmarshalMap(result.Items[idx], &queryOutputCustomerDetailsMap)
+		}
 		resp, errJson := json.Marshal(queryOutputCustomerDetailsMap)
 
 		if errJson != nil {

@@ -4,6 +4,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -13,8 +14,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
 
-type items struct {
-}
+// type items struct {
+// }
 
 func userDetailsQueryHandler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 
@@ -28,7 +29,10 @@ func userDetailsQueryHandler(request events.APIGatewayProxyRequest) (events.APIG
 	svc := dynamodb.New(sess)
 
 	var userMap map[string]interface{}
-	var queryCustomerDetailsMap map[string]interface{}
+	// var queryCustomerDetailsMap map[string]interface{}
+	var userDetails []map[string]interface{}
+	// var userArray map[string]interface{}
+
 	json.Unmarshal([]byte(request.Body), &userMap)
 	// userMethod := userMap["method"].(string) //Using type assertion to concat "User#" prefix
 	// fmt.Println(userMethod)
@@ -54,24 +58,40 @@ func userDetailsQueryHandler(request events.APIGatewayProxyRequest) (events.APIG
 		},
 	})
 
-	jsonData, errJson := json.Marshal(result) //converted to dynamodb json
-	if errJson != nil {
-		fmt.Println(errJson.Error())
+	jsonData := make(map[string]interface{})
+
+	dynamodbattribute.UnmarshalListOfMaps(result.Items, &userDetails)
+	for _, val := range userDetails {
+		for k, _ := range val {
+			if k == "sk" {
+				if val[k] == "CustomerDetails" {
+					jsonData["basic_info"] = val
+				} else if strings.HasPrefix(val[k].(string), "ElectricityDetails#") {
+					jsonData["electricity_details"] = val
+				} else if strings.HasPrefix(val[k].(string), "GasDetails#") {
+					jsonData["gas_details"] = val
+				}
+			}
+		}
 	}
 
-	dynamodbattribute.UnmarshalMap(result.Items[0], &queryCustomerDetailsMap) //single document dynamo json to normal
-	resp, errJson := json.Marshal(queryCustomerDetailsMap)
-
-	// if errJson != nil {
-	// 	return events.APIGatewayProxyResponse{Body: "Cannot convert to json string", StatusCode: 400}, nil
+	data, errJson := json.Marshal(jsonData)
+	fmt.Println(jsonData)
+	//temporary
+	// for idx, _ := range result.Items {
+	// 	dynamodbattribute.UnmarshalMap(result.Items[idx], &queryCustomerDetailsMap)
 	// }
+
+	if errJson != nil {
+		return events.APIGatewayProxyResponse{Body: "Cannot convert to json string", StatusCode: 400}, nil
+	}
 
 	// Checking if User with given email exist
 	if err != nil {
 		return events.APIGatewayProxyResponse{Body: "User not found", StatusCode: 404}, nil
 	}
 	// Returning the response object that has been written to the Database
-	return events.APIGatewayProxyResponse{Body: string(jsonData), StatusCode: 200}, nil
+	return events.APIGatewayProxyResponse{Body: string(data), StatusCode: 200}, nil
 
 }
 
