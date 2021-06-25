@@ -63,3 +63,39 @@ Resources:
       Environment:
         Variables:
           PARAM1: VALUE
+  searchQueryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: searchQueryFunction
+      Handler: search-query
+      Runtime: go1.x
+      Tracing: Active
+      Policies:
+      - AmazonDynamoDBFullAccess
+      Events:
+        CatchAll:
+          Type: Api
+          Properties:
+            Path: /search-query
+            Method: POST
+      Environment:
+        Variables:
+          PARAM1: VALUE
+  userDetailsQueryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: userDetailsQueryFunction
+      Handler: user-details
+      Runtime: go1.x
+      Tracing: Active
+      Policies:
+      - AmazonDynamoDBFullAccess
+      Events:
+        CatchAll:
+          Type: Api
+          Properties:
+            Path: /user-details
+            Method: POST
+      Environment:
+        Variables:
+          PARAM1: VALUE

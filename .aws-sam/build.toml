@@ -22,4 +22,18 @@ source_md5 = ""
 packagetype = "Zip"
 functions = ["queryGsiFunction"]
 
+[function_build_definitions.39cd99bf-d094-42ac-8ce1-4b0e3045b0c0]
+codeuri = "/home/sahil/EaglePower/github/customer_360/search-query"
+runtime = "go1.x"
+source_md5 = ""
+packagetype = "Zip"
+functions = ["searchQueryFunction"]
+
+[function_build_definitions.4d29e840-c85f-48a9-bd66-bd44dca174f3]
+codeuri = "/home/sahil/EaglePower/github/customer_360/user-details"
+runtime = "go1.x"
+source_md5 = ""
+packagetype = "Zip"
+functions = ["userDetailsQueryFunction"]
+
 [layer_build_definitions]
